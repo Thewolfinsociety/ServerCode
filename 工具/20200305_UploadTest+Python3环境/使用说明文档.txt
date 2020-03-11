@@ -1,0 +1,4 @@
+﻿打开Python3目录， 中Server目录；
+双击 TestUpload.bat；
+即会将9000.txt上传。
+打印的为接口返回的信息。
