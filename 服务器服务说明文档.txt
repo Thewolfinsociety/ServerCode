@@ -1,0 +1,9 @@
+OperateDB.py 用户管理服务，软件页面js服务
+ConnectDases 用于data.mdb数据库
+ServerserviceProgram 用于趟门，掩门配置服务，报价配置服务
+DealZip.py 升级包服务
+UrlDoc
+8004 ServerserviceProgram_TestPython 服务
+JsonToPrice_Version1.py Excel服务
+redis 任务服务
+redis 启动服务

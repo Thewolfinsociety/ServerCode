@@ -1,0 +1,20 @@
+2019-11-06 10:13:39,994 [D:\HGSoftware\全友一体化20190418-0507已升级new1\Python\Log\all.log:3751] [INFO]- LUAPath=D:\HGSoftware\全友一体化20190418-0507已升级new1\Program\
+2019-11-06 10:13:39,994 [D:\HGSoftware\全友一体化20190418-0507已升级new1\Python\Log\all.log:3753] [INFO]- luafile:D:\HGSoftware\全友一体化20190418-0507已升级new1\Program\抽盒内嵌-三节导轨.lua
+2019-11-06 10:13:41,243 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:376] [INFO]- len of bomlist=80
+2019-11-06 10:13:41,243 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:377] [INFO]- len of bomQuolist=79
+2019-11-06 10:13:41,244 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:378] [INFO]- len of mProductList=1
+2019-11-06 10:13:41,244 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:379] [INFO]- len of Desdoorlist=0
+2019-11-06 10:13:41,244 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:380] [INFO]- len of Desslidinglist=0
+2019-11-06 10:13:41,244 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:381] [INFO]- len of mBDXMLList=1
+2019-11-06 10:13:44,036 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:398] [INFO]- len of basewjlist1=3
+2019-11-06 10:13:44,704 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:403] [INFO]- len of basewjlist2=60
+2019-11-06 11:52:41,085 [D:\HGSoftware\全友一体化20190418-0507已升级new1\Python\Log\all.log:3752] [INFO]- LUAPath=D:\HGSoftware\全友一体化20190418-0507已升级new1\Program\
+2019-11-06 11:52:41,085 [D:\HGSoftware\全友一体化20190418-0507已升级new1\Python\Log\all.log:3754] [INFO]- luafile:D:\HGSoftware\全友一体化20190418-0507已升级new1\Program\抽盒内嵌-三节导轨.lua
+2019-11-06 11:52:41,375 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:376] [INFO]- len of bomlist=80
+2019-11-06 11:52:41,375 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:377] [INFO]- len of bomQuolist=79
+2019-11-06 11:52:41,375 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:378] [INFO]- len of mProductList=1
+2019-11-06 11:52:41,375 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:379] [INFO]- len of Desdoorlist=0
+2019-11-06 11:52:41,375 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:380] [INFO]- len of Desslidinglist=0
+2019-11-06 11:52:41,375 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:381] [INFO]- len of mBDXMLList=1
+2019-11-06 11:52:43,517 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:398] [INFO]- len of basewjlist1=3
+2019-11-06 11:52:43,726 [D:/HGSoftware/全友一体化20190418-0507已升级new1/Python/PythontoBomJson/xmltojson.py:403] [INFO]- len of basewjlist2=60

@@ -1,0 +1,1515 @@
+# -*- coding: utf-8 -*-
+'''
+服务器版
+功能：返回趟门掩门配置
+
+vesion 1.0.1
+2019/11/19
+author:litao
+'''
+from xml.dom import minidom
+import logging
+from SlidingAndDoor.funcGetSlidingJson import *
+from SlidingAndDoor.funcGetDoorJson import *
+logging.basicConfig(level="DEBUG")
+_logging = logging.getLogger(__name__)
+
+class PDoorsParam(object):    #掩门参数
+    def __init__(self):
+        self.id = 0
+        self.deleted = False
+        self.name = ''
+        self.DoorsType = ''
+        self.handle = ''
+        self.wjname = ''
+        self.hboxname = ''
+        self.paneltype = ''
+        self.cap = 0
+        self.eb_cap = 0
+        self.vboxname = ''
+        self.udboxname = ''
+
+        self.vboxl = ''
+        self.udboxl = ''
+
+        self.vboxh = 0
+        self.udboxh = 0
+        self.vthick = 0
+        self.udthick = 0
+        self.vboxjtw = 0
+        self.udboxjtw = 0
+        self.hboxjtw = 0
+        self.udbox_hbox_value = 0
+
+        self.d3name = ''
+        self.hbox3d = ''
+        self.ubox3d = ''
+        self.dbox3d = ''
+
+        self.cpm_lmax = 0
+        self.cpm_hmax = 0
+
+        self.vdirect = ''
+        self.vfbstr = ''
+        self.uddirect = ''
+        self.udfbstr = ''
+        self.vmemo = ''
+        self.udmemo = ''
+        self.fbstr = ''
+
+        self.iscalc_framebom = 0
+        self.is_xq = 0
+        self.cb_yyvalue = 0
+        self.is_buy = 0
+
+        self.frame_valuel = 0
+        self.frame_valueh = 0
+
+        self.bomtype = ''
+        self.left_doorxml = ''
+        self.right_doorxml = ''
+        self.doorxml = ''
+        self.bdfile = ''
+        self.l_bdfile = ''
+        self.r_bdfile = ''
+        self.u_bdfile = ''
+        self.d_bdfile = ''
+
+        self.noframe_bom = 0
+
+class TDoorDoorRect(object):
+    def __init__(self):
+        self.x0 = 0
+        self.y0 = 0
+        self.doorw = 0
+        self.doorh = 0
+        self.x1 = 0
+        self.y1 = 0
+        self.doorw1 = 0
+        self.doorh1 = 0
+        self.selected = False
+        self.hhdraw = False
+        self.mOpenDirect = '' #开门方向
+        self.mMemo = ''
+        self.mDoorW = 0
+        self.mDoorH = 0
+        self.mVBoxW = 0
+        self.mUDBoxH = 0
+        self.mVBoxW0 = 0
+        self.mUDBoxH0 = 0
+        self.mHandle = ''
+        self.mHandlePos = ''
+        self.mHandlePosX = ''
+        self.mHandlePosY = ''
+
+        self.mHandleX = 0
+        self.mHandleY = 0
+        self.mHandleW = 0
+        self.mHandleH = 0
+
+        self.mHinge = ''
+        self.mHingeCt = ''
+        self.mIsFrame = False
+
+        self.mHHArr = []
+
+        self.mPanelType = ''
+        self.mPanelColor = ''
+        self.boxlist = []
+        self.panellist = []
+        self.mYPos = 0
+        self.mPParam = PDoorsParam()
+        self.mHingeHoleDes = ''
+        self.mHingeHoleParam = ''
+        self.mHingeHoleExtra = ''
+
+class TDoorRect(object):
+    def __init__(self):
+        self.doorw = 0
+        self.doorh = 0
+        self.x0 = 0
+        self.y0 = 0
+        self.doorw2 = 0
+        self.doorh2 = 0
+        self.selected = False
+        self.mUDBoxParam = {}
+        self.mVBoxParam = {}
+        self.mPanelType = ''
+        self.mPanelColor = ''
+        self.mVBoxColor = ''
+        self.boxlist = []
+        self.panellist = []
+        self.mYPos = 0
+
+class DoorRectPanel(object):
+    def __init__(self):
+        self.selected = False
+        self.w0 = 0                  #可视
+        self.h0 = 0
+        self.x0 = 0
+        self.y0 = 0
+        self.d0 = 0
+        self.w1 = 0
+        self.h1 = 0
+        self.x1 = 0
+        self.y1 = 0
+        self.d1 = 0
+        self.w2 = 0
+        self.h2 = 0
+        self.x2 = 0
+        self.y2 = 0
+        self.d2 = 0
+        self.PanelType = ''
+        self.color = ''
+        self.direct =''
+        self.pricetype = ''
+        self.color2 = ''
+        self.price = 0
+        self.price2 = 0
+        self.thick = 0
+
+class RectPanel(object):
+    def __init__(self):
+        self.selected = False
+        self.w0 = 0                  #可视
+        self.h0 = 0
+        self.x0 = 0
+        self.y0 = 0
+        self.d0 = 0
+        self.w1 = 0
+        self.h1 = 0
+        self.x1 = 0
+        self.y1 = 0
+        self.d1 = 0
+        self.w2 = 0
+        self.h2 = 0
+        self.x2 = 0
+        self.y2 = 0
+        self.d2 = 0
+        self.PanelType = ''
+        self.color = ''
+        self.direct =''
+        self.memo = ''
+        self.pricetype = ''
+        self.color2 = ''
+        self.price = 0
+        self.price2 = 0
+        self.extradata = ''
+
+class DoorRectBox(object):
+    def __init__(self):
+        self.vh = False
+        self.selected = False
+        self.w0 = 0                  #可视
+        self.h0 = 0
+        self.x0 = 0
+        self.y0 = 0
+        self.d0 = 0
+        self.w1 = 0
+        self.h1 = 0
+        self.x1 = 0
+        self.y1 = 0
+        self.d1 = 0
+        self.w2 = 0
+        self.h2 = 0
+        self.x2 = 0
+        self.y2 = 0
+        self.d2 = 0
+        self.boxtype = ''
+        self.color = ''
+
+
+def getfirstchild(node):
+    Result = None
+    for child in node.childNodes:
+        if child.nodeType !=1: continue
+        Result = child
+    return Result
+
+# def LoadXML2Bom(xmlfile):
+#     global config
+#     def EnumChild(root):
+#         for i in range(0, root.childNodes.length):
+#
+#             node = root.childNodes[i]
+#             if node.nodeType != 1 : continue
+#             if root.nodeName == u'我的模块':
+#                 string = node.getAttribute(u'显示方式')
+#                 if (string == u'3'):
+#                     root.childNodes.remove(node)
+#                     continue
+#                 if node.childNodes.length > 0:
+#                     for j in range(0, node.childNodes.length):  #
+#                         cnode = node.childNodes[j]                #产品节点
+#                         if cnode.nodeType != 1: continue
+#                         string = cnode.getAttribute(u'类别')
+#                         if (string == u'趟门,趟门') or (string == u'掩门,掩门'):
+#                             for k in range(0, cnode.childNodes.length):  #
+#                                 ccnode = cnode.childNodes[k]
+#                                 if ccnode.nodeType != 1: continue
+#                                 if ccnode.nodeName == u'模板':
+#                                     cccnode = getfirstchild(ccnode)
+#                                     childxml = cccnode.toxml('utf8')
+#                                     _logging.debug(childxml)
+#
+#             EnumChild(node)
+#
+#     DOMTree = minidom.parse(xmlfile)  # xmlfilepath+xmlfile
+#     root = DOMTree.getElementsByTagName(u'产品')[0]
+#     node = getfirstchild(root)
+#
+#     EnumChild(node)
+#     return config
+
+def IsHasObj(oldlist, obj):
+    Result = False
+    if obj in oldlist:
+        Result = True
+    return Result
+
+def Add2Config(name, obj):
+    if obj == {}:return
+    if name not in config['ymconfig']:
+
+        config['ymconfig'][name] = []
+    ishas = False
+    ishas = IsHasObj(config['ymconfig'][name], obj)
+    if ishas:return
+    config['ymconfig'][name].append(obj)
+    #_logging.debug(name+json.dumps(obj,ensure_ascii=False))
+
+def Add2SlidingConfig(name, obj):
+
+
+    if name not in config['tmconfig']:
+
+        config['tmconfig'][name] = []
+    ishas = IsHasObj(config['tmconfig'][name], obj)
+    if ishas: return
+    config['tmconfig'][name].append(obj)
+    #_logging.debug(name+json.dumps(obj,ensure_ascii=False))
+
+def arryFindstr(arr, string):
+    for k in range(len(arr)):
+        if (arr[k] == string):
+            return True
+    return False
+
+def AddmWJBomDetailList(wjname, door_bh, opendirect, bktype):
+    pwjbom = GetWjBom(wjname)
+    if pwjbom:
+        Add2Config('mWJBomList', pwjbom)  # 五金配件分类.cfg
+        for i in range(len(mWJBomDetailList)):
+            pwjbomdetail = mWJBomDetailList[i]
+            if ((pwjbomdetail['bomname'] == pwjbom['name']) and ((pwjbomdetail['door_bh'] == 0)
+                                                                 or (pwjbomdetail['door_bh'] == door_bh))
+                    and ((pwjbomdetail['opendirect'] == '') or (pwjbomdetail['opendirect'] == opendirect))
+                    and ((pwjbomdetail['bktype'] == '') or (arryFindstr(pwjbomdetail['bktypeAry'], bktype)))):
+
+                Add2Config('mWJBomDetailList', pwjbomdetail)  # 五金配件分类数据.cfg
+                if pwjbomdetail:
+                    pa = GetDoorAccessory(pwjbomdetail['name'])
+                    Add2Config('mAccessoryList', pa)
+
+def AddDoorPanelBomDetailList(bomclass, mat, color, color2, color3, pnll, pnlh):
+    for i in range(0, len(mDoorPanelBomDetailList)):
+        ppbdetail = mDoorPanelBomDetailList[i]
+
+        if ((ppbdetail['bomclass'] == bomclass) and (float(ppbdetail['lmin']) < float(pnll)) and (float(ppbdetail['lmax']) >= float(pnll)) and (
+                float(ppbdetail['hmin']) < float(pnlh)) and (float(ppbdetail['hmax']) >= float(pnlh))):
+            Add2Config('mDoorPanelBomDetailList', p)
+
+def DoorRecalcDoor(door, t1, t2, tt1, tt2, m, mGridItem):
+    if (mGridItem==6) and (len(door.panellist)==2):  #// 两均分(下格固定)
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + (t2 / 1) * (0 + 0) + tt2 * m
+            rb.y1 = rb.y1 + (t2 / 1) * (0 + 0) + tt2 * m
+            rb.y2 = rb.y2 + (t2 / 1) * (0 + 0) + tt2 * m
+            rb.x0 = rb.x0 + tt1 * m
+            rb.x1 = rb.x1 + tt1 * m
+            rb.x2 = rb.x2 + tt1 * m
+            rb.w0 = rb.w0 + t1
+            rb.w1 = rb.w1 + t1
+            rb.w2 = rb.w2 + t1
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            n = 0
+            if j==1: pnl.h0 = pnl.h0 + (t2 / 1)
+            pnl.y0 = pnl.y0 + (t2 / 1) * n + tt2 * m
+            if j==1: pnl.h1 = pnl.h1 + (t2 / 1)
+            pnl.y1 = pnl.y1 + (t2 / 1) * n + tt2 * m
+            if j==1: pnl.h2 = pnl.h2 + (t2 / 1)
+            pnl.y2 = pnl.y2 + (t2 / 1) * n + tt2 * m
+            pnl.x0 = pnl.x0 + tt1 * m
+            pnl.x1 = pnl.x1 + tt1 * m
+            pnl.x2 = pnl.x2 + tt1 * m
+            pnl.w0 = pnl.w0 + t1
+            pnl.w1 = pnl.w1 + t1
+            pnl.w2 = pnl.w2 + t1
+
+    elif (mGridItem==8) and (len(door.panellist)==3) : #// 三格，中间格保持不变
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + (t2 / 2) * (0 + 1) + tt2 * m
+            rb.y1 = rb.y1 + (t2 / 2) * (0 + 1) + tt2 * m
+            rb.y2 = rb.y2 + (t2 / 2) * (0 + 1) + tt2 * m
+            rb.x0 = rb.x0 + tt1 * m
+            rb.x1 = rb.x1 + tt1 * m
+            rb.x2 = rb.x2 + tt1 * m
+            rb.w0 = rb.w0 + t1
+            rb.w1 = rb.w1 + t1
+            rb.w2 = rb.w2 + t1
+
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            n = j
+            if j == 2: n = 1
+            if j != 1: pnl.h0 = pnl.h0 + (t2 / 2)
+            pnl.y0 = pnl.y0 + (t2 / 2) * n + tt2 * m
+            if j != 1: pnl.h1 = pnl.h1 + (t2 / 2)
+            pnl.y1 = pnl.y1 + (t2 / 2) * n + tt2 * m
+            if j != 1: pnl.h2 = pnl.h2 + (t2 / 2)
+            pnl.y2 = pnl.y2 + (t2 / 2) * n + tt2 * m
+            pnl.x0 = pnl.x0 + tt1 * m
+            pnl.x1 = pnl.x1 + tt1 * m
+            pnl.x2 = pnl.x2 + tt1 * m
+            pnl.w0 = pnl.w0 + t1
+            pnl.w1 = pnl.w1 + t1
+            pnl.w2 = pnl.w2 + t1
+    elif (mGridItem==7) and (len(door.panellist)==2): #// 两均分(上格固定)
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + (t2 / 1) * (0 + 1) + tt2 * m
+            rb.y1 = rb.y1 + (t2 / 1) * (0 + 1) + tt2 * m
+            rb.y2 = rb.y2 + (t2 / 1) * (0 + 1) + tt2 * m
+            rb.x0 = rb.x0 + tt1 * m
+            rb.x1 = rb.x1 + tt1 * m
+            rb.x2 = rb.x2 + tt1 * m
+            rb.w0 = rb.w0 + t1
+            rb.w1 = rb.w1 + t1
+            rb.w2 = rb.w2 + t1
+
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            n = 0
+            if j==1: n =1
+            if j==0: pnl.h0 =pnl.h0 + (t2 / 1)
+            pnl.y0 = pnl.y0 + (t2 / 1) * n + tt2 * m
+            if j==0: pnl.h1 =pnl.h1 + (t2 / 1)
+            pnl.y1 = pnl.y1 + (t2 / 1) * n + tt2 * m
+            if j==0: pnl.h2 =pnl.h2 + (t2 / 1)
+            pnl.y2 = pnl.y2 + (t2 / 1) * n + tt2 * m
+            pnl.x0 = pnl.x0 + tt1 * m
+            pnl.x1 = pnl.x1 + tt1 * m
+            pnl.x2 = pnl.x2 + tt1 * m
+            pnl.w0 = pnl.w0 + t1
+            pnl.w1 = pnl.w1 + t1
+            pnl.w2 = pnl.w2 + t1
+
+    elif (mGridItem==9) and (len(door.panellist)==3) : #// 三均分(上两格固定)
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + (t2 / 1) * (0 + 1) + tt2 * m
+            rb.y1 = rb.y1 + (t2 / 1) * (0 + 1) + tt2 * m
+            rb.y2 = rb.y2 + (t2 / 1) * (0 + 1) + tt2 * m
+            rb.x0 = rb.x0 + tt1 * m
+            rb.x1 = rb.x1 + tt1 * m
+            rb.x2 = rb.x2 + tt1 * m
+            rb.w0 = rb.w0 + t1
+            rb.w1 = rb.w1 + t1
+            rb.w2 = rb.w2 + t1
+
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            n = 0
+            if j > 0: n = 1
+            if j==0: pnl.h0 = pnl.h0 + (t2 / 1)
+            pnl.y0 = pnl.y0 + (t2 / 1) * n + tt2 * m
+            if j==0: pnl.h1 = pnl.h1 + (t2 / 1)
+            pnl.y1 = pnl.y1 + (t2 / 1) * n + tt2 * m
+            if j==0: pnl.h2 = pnl.h2 + (t2 / 1)
+            pnl.y2 = pnl.y2 + (t2 / 1) * n + tt2 * m
+            pnl.x0 = pnl.x0 + tt1 * m
+            pnl.x1 = pnl.x1 + tt1 * m
+            pnl.x2 = pnl.x2 + tt1 * m
+            pnl.w0 = pnl.w0 + t1
+            pnl.w1 = pnl.w1 + t1
+            pnl.w2 = pnl.w2 + t1
+
+    elif (mGridItem==10) and (len(door.panellist)==3) : #// 三均分(上两格固定)
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + (t2 / 1) * (0 + 0) + tt2 * m
+            rb.y1 = rb.y1 + (t2 / 1) * (0 + 0) + tt2 * m
+            rb.y2 = rb.y2 + (t2 / 1) * (0 + 0) + tt2 * m
+            rb.x0 = rb.x0 + tt1 * m
+            rb.x1 = rb.x1 + tt1 * m
+            rb.x2 = rb.x2 + tt1 * m
+            rb.w0 = rb.w0 + t1
+            rb.w1 = rb.w1 + t1
+            rb.w2 = rb.w2 + t1
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            n = 0
+            if j==2 : pnl.h0 = pnl.h0 + (t2 / 1)
+            pnl.y0 = pnl.y0 + (t2 / 1) * n + tt2 * m
+            if j==2 : pnl.h1 = pnl.h1 + (t2 / 1)
+            pnl.y1 = pnl.y1 + (t2 / 1) * n + tt2 * m
+            if j==2 : pnl.h2 = pnl.h2 + (t2 / 1)
+            pnl.y2 = pnl.y2 + (t2 / 1) * n + tt2 * m
+            pnl.x0 = pnl.x0 + tt1 * m
+            pnl.x1 = pnl.x1 + tt1 * m
+            pnl.x2 = pnl.x2 + tt1 * m
+            pnl.w0 = pnl.w0 + t1
+            pnl.w1 = pnl.w1 + t1
+            pnl.w2 = pnl.w2 + t1
+    else:
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + (t2 / len(door.panellist)) * (j + 1) + tt2 * m
+            rb.y1 = rb.y1 + (t2 / len(door.panellist)) * (j + 1) + tt2 * m
+            rb.y2 = rb.y2 + (t2 / len(door.panellist)) * (j + 1) + tt2 * m
+            rb.x0 = rb.x0 + tt1 * m
+            rb.x1 = rb.x1 + tt1 * m
+            rb.x2 = rb.x2 + tt1 * m
+            rb.w0 = rb.w0 + t1
+            rb.w1 = rb.w1 + t1
+            rb.w2 = rb.w2 + t1
+
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            pnl.h0 = pnl.h0 + (t2 / len(door.panellist))
+            pnl.y0 = pnl.y0 + (t2 / len(door.panellist)) * j + tt2 * m
+            pnl.h1 = pnl.h1 + (t2 / len(door.panellist))
+            pnl.y1 = pnl.y1 + (t2 / len(door.panellist)) * j + tt2 * m
+            pnl.h2 = pnl.h2 + (t2 / len(door.panellist))
+            pnl.y2 = pnl.y2 + (t2 / len(door.panellist)) * j + tt2 * m
+            pnl.x0 = pnl.x0 + tt1 * m
+            pnl.x1 = pnl.x1 + tt1 * m
+            pnl.x2 = pnl.x2 + tt1 * m
+            pnl.w0 = pnl.w0 + t1
+            pnl.w1 = pnl.w1 + t1
+            pnl.w2 = pnl.w2 + t1
+
+def RecalcDoor(door, t1, t2, hh, mGridItem):
+    if (mGridItem == 6) and (len(door.panellist)==2):  # 两均分(下格固定)
+        t2 = hh
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + t2 * (0 + 0)
+            rb.y1 = rb.y1 + t2 * (0 + 0)
+            rb.y2 = rb.y2 + t2 * (0 + 0)
+
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            if j==1:
+                pnl.h0 = pnl.h0 + t2
+                pnl.y0 = pnl.y0
+                pnl.h1 = pnl.h1 + t2
+                pnl.y1 = pnl.y1
+                pnl.h2 = pnl.h2 + t2
+                pnl.y2 = pnl.y2
+
+    elif (mGridItem == 7) and (len(door.panellist)==2):  # 两均分，上格固定
+        t2 = hh
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + t2 * (0 + 1)
+            rb.y1 = rb.y1 + t2 * (0 + 1)
+            rb.y2 = rb.y2 + t2 * (0 + 1)
+
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            if j==1:
+
+                pnl.h0 = pnl.h0
+                pnl.y0 = pnl.y0 + t2
+                pnl.h1 = pnl.h1
+                pnl.y1 = pnl.y1 + t2
+                pnl.h2 = pnl.h2
+                pnl.y2 = pnl.y2 + t2
+            elif j==0:
+                pnl.h0 = pnl.h0 + t2
+                pnl.y0 = pnl.y0
+                pnl.h1 = pnl.h1 + t2
+                pnl.y1 = pnl.y1
+                pnl.h2 = pnl.h2 + t2
+                pnl.y2 = pnl.y2
+
+    elif (mGridItem == 8) and (len(door.panellist)==3):  # 三格，中间格固定
+
+        t2 = hh / 2
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + t2 * (0 + 1)
+            rb.y1 = rb.y1 + t2 * (0 + 1)
+            rb.y2 = rb.y2 + t2 * (0 + 1)
+
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            if j==1:
+                pnl.h0 = pnl.h0
+                pnl.y0 = pnl.y0 + t2
+                pnl.h1 = pnl.h1
+                pnl.y1 = pnl.y1 + t2
+                pnl.h2 = pnl.h2
+                pnl.y2 = pnl.y2 + t2
+            elif j==0:
+                pnl.h0 = pnl.h0 + t2
+                pnl.y0 = pnl.y0
+                pnl.h1 = pnl.h1 + t2
+                pnl.y1 = pnl.y1
+                pnl.h2 = pnl.h2 + t2
+                pnl.y2 = pnl.y2
+            elif j==2:
+                pnl.h0 = pnl.h0 + t2
+                pnl.y0 = pnl.y0 + t2
+                pnl.h1 = pnl.h1 + t2
+                pnl.y1 = pnl.y1 + t2
+                pnl.h2 = pnl.h2 + t2
+                pnl.y2 = pnl.y2 + t2
+
+    elif (mGridItem == 9) and (len(door.panellist)==3):  # 三均分(上两格固定)
+        t2 = hh
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + t2 * (0 + 1)
+            rb.y1 = rb.y1 + t2 * (0 + 1)
+            rb.y2 = rb.y2 + t2 * (0 + 1)
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            if j > 0:
+                pnl.h0 = pnl.h0
+                pnl.y0 = pnl.y0 + t2
+                pnl.h1 = pnl.h1
+                pnl.y1 = pnl.y1 + t2
+                pnl.h2 = pnl.h2
+                pnl.y2 = pnl.y2 + t2
+            elif j==0:
+                pnl.h0 = pnl.h0 + t2
+                pnl.y0 = pnl.y0
+                pnl.h1 = pnl.h1 + t2
+                pnl.y1 = pnl.y1
+                pnl.h2 = pnl.h2 + t2
+                pnl.y2 = pnl.y2
+
+    elif (mGridItem == 10) and (len(door.panellist)==3):  # 三均分(下两格固定)    }
+        t2 = hh
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + t2 * (0 + 0)
+            rb.y1 = rb.y1 + t2 * (0 + 0)
+            rb.y2 = rb.y2 + t2 * (0 + 0)
+
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            if j > 1:
+                pnl.h0 = pnl.h0 + t2
+                pnl.y0 = pnl.y0
+                pnl.h1 = pnl.h1 + t2
+                pnl.y1 = pnl.y1
+                pnl.h2 = pnl.h2 + t2
+                pnl.y2 = pnl.y2
+            elif j==0:
+                pnl.h0 = pnl.h0
+                pnl.y0 = pnl.y0
+                pnl.h1 = pnl.h1
+                pnl.y1 = pnl.y1
+                pnl.h2 = pnl.h2
+                pnl.y2 = pnl.y2
+
+
+    else:
+        t2 = hh / (len(door.panellist))
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            rb.y0 = rb.y0 + t2 * (j + 1)
+            rb.y1 = rb.y1 + t2 * (j + 1)
+            rb.y2 = rb.y2 + t2 * (j + 1)
+
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            pnl.h0 = pnl.h0 + t2
+            pnl.y0 = pnl.y0 + t2 * j
+            pnl.h1 = pnl.h1 + t2
+            pnl.y1 = pnl.y1 + t2 * j
+            pnl.h2 = pnl.h2 + t2
+            pnl.y2 = pnl.y2 + t2 * j
+
+def getymconfig(xmltemplate, l, h, mDoorsList):
+
+    root = ET.fromstring(xmltemplate)
+    attri = root.get(u'门洞宽','0')
+    mL = float(attri)
+    attri = root.get(u'门洞高', '0')
+    mH = float(attri)
+
+    attri = root.get(u'单门数量类型', '')
+    mPExp = GetDoorsExp(attri)
+    Add2Config('mExpList', mPExp)
+    string = root.get(u'门类型', '')
+    mPType = GetDoorsType(string)
+    Add2Config('mTypeList', mPType)
+    attri = root.get(u'门框类型', '')
+    mPParam = GetDoorsParam(string, attri)
+    mMyVBoxColor = root.get(u'门框颜色', '')
+
+    Add2Config('mParamList', mPParam)
+    attri = root.get(u'中横框类型', '')
+    mPHBoxParam = GetHBoxParam(attri)
+    Add2Config('mDoorHBoxParamList', mPHBoxParam)
+
+    mGridItem = 0
+    attri = root.get(u'均分')
+    if attri != None : mGridItem = int(attri)
+
+    mDataMode = int(root.get(u'DataMode', '0'))
+
+    m = -1
+    ll = 0
+    hh = 0
+    if (mPExp == {}) or (mPType == {}) or (mPParam == {}):
+        mCopyDoor = -1
+        return
+    mIsVertical = False
+    attri = root.get(u'是否竖排',False)
+
+    if (attri != None) and (attri == 'True') :
+        mIsVertical = True
+
+    if l != 0 : ll = l - (mL)
+    if h != 0 : hh = h - (mH)
+    mL = Delphi_Round(mL + ll)
+    mH = Delphi_Round(mH + hh)
+    m = 0
+    t1 = ll / mPExp['doornum'] #; // 计算需要补回的门洞差值
+    t2 = hh
+    tt1 = t1
+    tt2 = 0
+    if mIsVertical :
+        t1 = ll
+        t2 = hh / mPExp['doornum']
+        tt1 = 0
+        tt2 = t2
+    m = -1
+    mDoorsList[:] = []
+    for i in range(0, len(root)):
+        node = root[i]
+        if (node.tag != u'单门'): continue
+        m = m + 1
+        door = TDoorDoorRect()
+        mDoorsList.append(door)
+        door.mPParam = mPParam
+        door.mHandle = node.get(u'拉手', '')
+        door.mOpenDirect = node.get(u'打开方向', '')
+        door.mHinge = node.get(u'门铰', '')
+
+        for j in range(0, len(node)):
+            cnode = node[j]
+            if cnode.tag != u'门芯' : continue
+
+            pnl = DoorRectPanel()
+            door.panellist.append(pnl)
+            pnl.PanelType = cnode.get(u'类型', '')
+            pnl.color = cnode.get(u'颜色', '')
+            pnl.color2 = cnode.get(u'颜色2', '')
+            attri = cnode.get('w0', '0')
+            pnl.w0 = float(attri)
+            attri = cnode.get('h0', '0')
+            pnl.h0 = float(attri)
+            attri = cnode.get('x0', '0')
+            pnl.x0 = float(attri)
+            attri = cnode.get('y0', '0')
+            pnl.y0 = float(attri)
+            attri = cnode.get('d0', '0')
+            pnl.d0 = float(attri)
+            attri = cnode.get('w1', '0')
+            pnl.w1 = float(attri)
+            attri = cnode.get('h1', '0')
+            pnl.h1 = float(attri)
+            attri = cnode.get('x1', '0')
+            pnl.x1 = float(attri)
+            attri = cnode.get('y1', '0')
+            pnl.y1 = float(attri)
+            attri = cnode.get('d1', '0')
+            pnl.d1 = float(attri)
+            attri = cnode.get('w2', '0')
+            pnl.w2 = float(attri)
+            attri = cnode.get('h2', '0')
+            pnl.h2 = float(attri)
+            attri = cnode.get('x2', '0')
+            pnl.x2 = float(attri)
+            attri = cnode.get('y2', '0')
+            pnl.y2 = float(attri)
+            attri = cnode.get('d2', '0')
+            pnl.d2 = float(attri)
+
+        #中横框
+        for i in range(0, len(node)):
+            cnode = node[i]
+            if (cnode.tag != u'中横框'): continue
+            rb = DoorRectBox()
+            rb.selected = False
+            door.boxlist.append(rb)
+            attri = cnode.get(u'类型', '0')
+            rb.boxtype = attri
+            attri = cnode.get(u'颜色', '0')
+            rb.color = attri
+            rb.vh = True
+            attri = cnode.get('vh', '0')
+            if attri == 'False':
+                rb.vh = False
+            attri = cnode.get('w0', '0')
+            rb.w0 = float(attri)
+            attri = cnode.get('h0', '0')
+            rb.h0 = float(attri)
+            attri = cnode.get('x0', '0')
+            rb.x0 = float(attri)
+            attri = cnode.get('y0', '0')
+            rb.y0 = float(attri)
+            attri = cnode.get('d0', '0')
+            rb.d0 = float(attri)
+            attri = cnode.get('w1', '0')
+            rb.w1 = float(attri)
+            attri = cnode.get('h1', '0')
+            rb.h1 = float(attri)
+            attri = cnode.get('x1', '0')
+            rb.x1 = float(attri)
+            attri = cnode.get('y1', '0')
+            rb.y1 = float(attri)
+            attri = cnode.get('d1', '0')
+            rb.d1 = float(attri)
+            attri = cnode.get('w2', '0')
+            rb.w2 = float(attri)
+            attri = cnode.get('h2', '0')
+            rb.h2 = float(attri)
+            attri = cnode.get('x2', '0')
+            rb.x2 = float(attri)
+            attri = cnode.get('y2', '0')
+            rb.y2 = float(attri)
+            attri = cnode.get('d2', '0')
+            rb.d2 = float(attri)
+
+        DoorRecalcDoor(door, t1, t2, tt1, tt2, m, mGridItem)
+
+    for i in range(0, len(mDoorsList)):
+        door = mDoorsList[i]
+        bh = Delphi_Round(mPType['depth'])
+        _logging.debug('拉手=' + door.mHandle)
+        phandle = GetDoorsHandle(door.mHandle)
+        Add2Config('mHandleList', phandle)  # 拉手
+
+        _logging.debug('门铰=' + door.mHinge)
+        phinge = GetDoorsHinge(door.mHinge, mPType)
+        Add2Config('mHingeList', phinge)  # 门铰
+
+        AddmWJBomDetailList(phandle['wjname'], bh, door.mOpenDirect, mPParam['name'])
+        AddmWJBomDetailList(phinge['wjname'], bh, door.mOpenDirect, mPParam['name'])
+        if (mPType['isframe']):
+            #门芯
+            for j in range(0, len(door.panellist)):
+                pnl = door.panellist[j]
+                pnltype = GetDoorPanelType(mPParam['name'], pnl.PanelType) #GetDoorPanelType
+                Add2Config('mDoorPanelTypeList', pnltype)  # 百叶板配置
+
+                if pnltype:
+                    mytype = pnltype['mytype']
+                    AddDoorPanelBomDetailList(pnltype['panelbom'], pnl.PanelType, pnl.color, pnl.color2, mMyVBoxColor,
+                                pnl.w1, pnl.h1)
+
+                _logging.debug('门芯类型=' + pnl.PanelType)
+                pssexp = GetDoorSSExp(pnl.PanelType)
+                Add2Config('mShutterExpList', pssexp)  #百叶板配置
+
+
+                _logging.debug('颜色=' + pnl.color)
+                pcolorclass = GetColorClass(u'门芯',pnl.color)
+                Add2Config('mColorClassList', pcolorclass)  # 颜色分类 门芯颜色
+            #中横框
+            for j in range(0, len(door.boxlist)):
+                rb = door.boxlist[j]
+                boxtype = rb.boxtype
+                hbox = GetHBoxParam(boxtype)
+                Add2Config('mDoorHBoxParamList', hbox)
+
+                wjname = hbox['wjname']
+                AddmWJBomDetailList(wjname, bh, door.mOpenDirect,  mPParam['name'])
+        else:
+
+            if ( len(door.panellist) > 0 ):
+                pnl = door.panellist[0]
+                pnltype = GetDoorPanelType(mPParam['name'], pnl.PanelType)
+                if ( pnltype ):  bh = pnltype['thick']
+
+            for j in range(0, door['panellist']):
+                pnl = door.panellist[j]
+
+                pnltype = GetDoorPanelType(mPParam['name'], pnl['PanelType'])  # GetDoorPanelType
+                Add2Config('mDoorPanelTypeList', pnltype)
+
+                if pnltype:
+                    AddDoorPanelBomDetailList(pnltype['panelbom'], pnl.PanelType, pnl.color, pnl.color2, mMyVBoxColor,
+                                pnl.w1, pnl.h1)
+                _logging.debug('门芯类型=' + pnl.PanelType)
+                pssexp = GetDoorSSExp(pnl.PanelType)
+                Add2Config('mShutterExpList', pssexp)  # 百叶板配置
+                _logging.debug('颜色=' + pnl.color)
+                pcolorclass = GetColorClass(u'门芯', pnl.color)
+                Add2Config('mColorClassList', pcolorclass)  # 颜色分类 门芯颜色
+
+
+    pcolorclass2 = GetColorClass2(mPParam['name'], mMyVBoxColor)
+    Add2Config('mColorClass2List', pcolorclass2)  # 颜色分类2  门框颜色
+    if (mDataMode == 0):
+        wjname = mPParam['wjname']
+        door_bh, opendirect, bktype = 0, '', mPParam['name']
+        AddmWJBomDetailList(wjname, door_bh, opendirect, bktype)
+
+    left_doorxml = mPParam['left_doorxml']
+    pxml = returnxml(left_doorxml)
+    Add2Config('mDoorXMLList', pxml)
+
+    right_doorxml = mPParam['right_doorxml']
+    pxml = returnxml(right_doorxml)
+    Add2Config('mDoorXMLList', pxml)
+
+    doorxml = mPParam['doorxml']
+    pxml = returnxml(doorxml)
+    Add2Config('mDoorXMLList', pxml)
+
+def GetWjBomDetaildata(wjname, skcolor1, skcolor2, skcolor3, skcolor4):
+    result = {}
+    pa = {}
+    for m in range(0 , len(mSlidingWjBomDetailList)):
+
+        pbomdetail = mSlidingWjBomDetailList[m]
+        if pbomdetail['bomname'] == wjname :
+            pa = GetSlidingAccessory(pbomdetail['name'])
+            if pa:
+                color = ToColor(pa['color'], skcolor1, skcolor2, skcolor3, skcolor4)
+                Add2SlidingConfig('SlidingAccessory', pa)
+
+                pcolorclass = GetSlidingColorClass(u'配件', pa['name'], color)
+                Add2SlidingConfig('SlidingColorClass', pcolorclass)
+    return result
+
+def gettmconfig(xmltemplate, l, h, mDoorsList):
+
+    root = ET.fromstring(xmltemplate)
+    attri = root.get(u'门洞宽', '0')
+    mL = int(attri)
+
+    attri = root.get(u'门洞高', '0')
+    mH = int(attri)
+    attri = root.get(u'延长导轨','0')
+    mAddLength = int(attri)
+    attri = root.get(u'单门数量类型', '')
+    pexp = GetSlidingExp(attri)           #单门数量类型
+    Add2SlidingConfig('SlidingExp', pexp)
+    attri = root.get(u'门类型','')
+    pstype = GetSlidingType(attri)
+    Add2SlidingConfig('SlidingType', pstype)
+    attri = root.get(u'边框类型', '')
+    psp = GetSlidingParam(attri)
+    Add2SlidingConfig('SlidingParam', psp)
+    attri = root.get(u'上下横框类型', '')
+    pudbox = GetUDBoxParam(attri)
+    Add2SlidingConfig('UDBoxParam', pudbox)
+    attri = root.get(u'上下轨类型', '')
+    ptrack = GetTrackParam(attri)
+    Add2SlidingConfig('TrackParam', ptrack)
+    attri = root.get(u'中横框类型', '')
+    phbox = GetSlidingHBoxParam(attri)
+    Add2SlidingConfig('HboxParam', phbox)
+    pvbox = {}
+    if psp: pvbox = GetVBoxParam(psp['vboxtype'])
+    Add2SlidingConfig('VBoxParam', pvbox)
+
+    attri = root.get(u'门板类型', '')
+    if attri:
+        mMyPanelType = attri
+    else:
+        mMyPanelType = ''
+
+    attri = root.get(u'门颜色', '')
+    if attri:
+        mMySlidingColor = attri
+    else:
+        mMySlidingColor = ''
+
+    attri = root.get(u'竖框颜色','')
+    if attri  : mMyVBoxColor = attri
+    else: mMyVBoxColor = ''
+
+    attri = root.get(u'上横框颜色', '')
+    if attri:
+        mMyUpBoxColor = attri
+    else:
+        mMyUpBoxColor = ''
+
+    attri = root.get(u'下横框颜色', '')
+    if attri:
+        mMyDownBoxColor = attri
+    else:
+        mMyDownBoxColor = ''
+
+    attri = root.get(u'上轨颜色', '')
+    if attri  : mMyUpTrackColor = attri
+    else:  mMyUpTrackColor =''
+
+    attri = root.get(u'下轨颜色', '')
+    if attri:
+        mMyDownTrackColor = attri
+    else:
+        mMyDownTrackColor = ''
+
+    attri = root.get(u'中横框颜色', '')
+    if attri:
+        mMyHBoxColor = attri
+    else:
+        mMyHBoxColor = ''
+
+    attri = root.get(u'门板颜色', '')
+    if attri:
+        mMyPanelColor = attri
+    else:
+        mMyPanelColor = ''
+    mDataMode = int(root.get(u'DataMode', '0'))
+    mGridItem = 0
+    attri = root.get(u'均分')
+    if attri != None: mGridItem = int(attri)
+    if (pexp =={}) or (pstype == {}) or (psp == {}) or (pudbox =={}) \
+        or (ptrack == {}) or (phbox =={}) or (pvbox == {}):
+        return
+    nHasMzhb = False #门转换表
+    ll = 0
+    hh = 0
+    if l != 0 : ll = l - (mL)
+    if h != 0 : hh = h - (mH)
+    if pexp['noexp'] :
+        ll = 0
+        hh = 0
+
+    mSlidingExp = pexp
+    mSlidingParam = psp
+    mSlidingType = pstype
+    mTrackParam = ptrack
+    UDBoxParam = pudbox
+    HBoxParam = phbox
+    VBoxParam = pvbox
+
+
+    m = 0
+    t1 = hh / (mGridItem + 1)
+    if mGridItem==5: t1 = hh  # ======
+    if mGridItem==6: t1 = hh  # 两均分，下格固定
+    if mGridItem==7: t1 = hh  # 两均分，上格固定
+    if mGridItem==8: t1 = hh / 2  # 三均分，中间格固定
+    if mGridItem==9: t1 = hh  # 三均分(上两格固定)
+    if mGridItem==10: t1 = hh  # 三均分(下两格固定)
+
+    mDoorsList[:] = []
+    m = -1
+    t1 = ll/mSlidingExp['doornum']
+    t2 = 0
+
+    for i in range(0, len(root)):
+        node = root[i]
+        if node.tag !=u'单门': continue
+        m = m+1
+        door = TDoorRect()
+        mDoorsList.append(door)
+        attri = node.get(u'宽')
+        door.doorw = float(attri) + t1  # 补差值
+        attri = node.get(u'高')
+        door.doorh = float(attri) + hh
+        attri = node.get(u'X0')
+        door.x0 = float(attri) + t1 * m  # 补差值
+        attri = node.get(u'Y0')
+        door.y0 = float(attri)
+        attri = node.get(u'竖框类型')
+        pvbox = GetVBoxParam(attri)
+        if pvbox: door.mVBoxParam = pvbox
+        attri = node.get(u'竖框颜色')
+        door.mVBoxColor = attri
+        attri = node.get(u'上下横框类型')
+        pudbox = GetUDBoxParam(attri)
+        if pudbox: door.mUDBoxParam = pudbox
+        for j in range(0, len(node)):
+            cnode = node[j]
+            if cnode.tag != u'中横框' : continue
+            rb = DoorRectBox()
+            door.boxlist.append(rb)
+            attri = cnode.get(u'类型')
+            rb.boxtype = attri
+            attri = cnode.get(u'颜色')
+            rb.color = attri
+            rb.vh = True
+            attri = cnode.get(u'vh')
+            if attri == 'False' : rb.vh = False
+            attri = cnode.get(u'w0')
+            rb.w0 = float(attri) + t1
+            attri = cnode.get(u'h0')
+            rb.h0 = float(attri)
+            attri = cnode.get(u'x0')
+            rb.x0 = float(attri) + t1 * m
+            attri = cnode.get(u'y0')
+            rb.y0 = float(attri)
+            attri = cnode.get(u'd0')
+            rb.d0 = float(attri)
+            attri = cnode.get(u'w1')
+            rb.w1 = float(attri) + t1
+            attri = cnode.get(u'h1')
+            rb.h1 = float(attri)
+            attri = cnode.get(u'x1')
+            rb.x1 = float(attri) + t1 * m
+            attri = cnode.get(u'y1')
+            rb.y1 = float(attri)
+            attri = cnode.get(u'd1')
+            rb.d1 = float(attri)
+            attri = cnode.get(u'w2')
+            rb.w2 = float(attri) + t1
+            attri = cnode.get(u'h2')
+            rb.h2 = float(attri)
+            attri = cnode.get(u'x2')
+            rb.x2 = float(attri) + t1 * m
+            attri = cnode.get(u'y2')
+            rb.y2 = float(attri)
+            attri = cnode.get(u'd2')
+            rb.d2 = float(attri)
+
+        for j in range(0, len(node)):
+            cnode = node[j]
+            if cnode.tag != u'门板' : continue
+            pnl = RectPanel()
+            pnl.selected = False
+            door.panellist.append(pnl)
+            attri = cnode.get(u'类型')
+            pnl.PanelType = attri
+            attri = cnode.get(u'颜色')
+            pnl.color = attri
+            attri = cnode.get(u'颜色2')
+            if attri: pnl.color2 = attri
+            attri = cnode.get(u'纹路')
+            pnl.direct = attri
+            attri = cnode.get(u'备注')
+            if attri:
+                pnl.memo = attri
+            attri = cnode.get(u'ExtraData')
+            if attri:
+                pnl.extradata = attri
+            attri = cnode.get(u'w0')
+            pnl.w0 = float(attri) + t1
+            attri = cnode.get(u'h0')
+            pnl.h0 = float(attri)
+            attri = cnode.get(u'x0')
+            pnl.x0 = float(attri)
+            attri = cnode.get(u'y0')
+            pnl.y0 = float(attri)
+            attri = cnode.get(u'd0')
+            pnl.d0 = float(attri)
+            attri = cnode.get(u'w1')
+            pnl.w1 = float(attri) + t1
+            attri = cnode.get(u'h1')
+            pnl.h1 = float(attri)
+            attri = cnode.get(u'x1')
+            pnl.x1 = float(attri) + t1 * m
+            attri = cnode.get(u'y1')
+            pnl.y1 = float(attri)
+            attri = cnode.get(u'd1')
+            pnl.d1 = float(attri)
+            attri = cnode.get(u'w2')
+            pnl.w2 = float(attri) + t1
+            attri = cnode.get(u'h2')
+            pnl.h2 = float(attri)
+            attri = cnode.get(u'x2')
+            pnl.x2 = float(attri) + t1 * m
+            attri = cnode.get(u'y2')
+            pnl.y2 = float(attri)
+            attri = cnode.get(u'd2')
+            pnl.d2 = float(attri)
+
+        RecalcDoor(door, t1, t2, hh, mGridItem)
+
+    skcolor1, skcolor2, skcolor3, skcolor4 = '', '' ,'', ''
+    if len(mDoorsList) > 0:
+        door = mDoorsList[0]
+        pcolorclass = GetSlidingColorClass(u'竖框', mSlidingParam['vboxtype'], door.mVBoxColor)
+        if pcolorclass:
+            Add2SlidingConfig('SlidingColorClass', pcolorclass)
+            skcolor1 = pcolorclass['skcolor1']
+            skcolor2 = pcolorclass['skcolor2']
+            skcolor3 = pcolorclass['skcolor3']
+            skcolor4 = pcolorclass['skcolor4']
+
+    if (mDataMode==0) and (mTrackParam['wlupcode'] != ''):
+        pcolorclass = GetSlidingColorClass(u'上轨', mTrackParam['upname'], mMyUpTrackColor)
+        if pcolorclass: Add2SlidingConfig('SlidingColorClass', pcolorclass)
+
+    if (mDataMode==0) and (mTrackParam['wldncode'] != ''):
+        pcolorclass = GetSlidingColorClass(u'上轨', mTrackParam['dnname'], mMyDownTrackColor)
+        if pcolorclass: Add2SlidingConfig('SlidingColorClass', pcolorclass)
+    #趟门关联五金
+    wjname = mSlidingParam['wjname']
+    if (mDataMode==0) and (wjname != ''):
+        pbomdetail = GetWjBomDetaildata(wjname, skcolor1, skcolor2, skcolor3, skcolor4)
+        Add2SlidingConfig('SlidingWjBomDetail', pbomdetail)
+    #上轨五金
+    if (mDataMode==0) and (mTrackParam['wjname1'] != ''):
+        pbomdetail = GetWjBomDetaildata(mTrackParam['wjname1'], skcolor1, skcolor2, skcolor3, skcolor4)
+        Add2SlidingConfig('SlidingWjBomDetail', pbomdetail)
+
+    #下轨五金
+    if (mDataMode==0) and (mTrackParam['wjname2'] != ''):
+        pbomdetail = GetWjBomDetaildata(mTrackParam['wjname2'], skcolor1, skcolor2, skcolor3, skcolor4)
+        Add2SlidingConfig('SlidingWjBomDetail', pbomdetail)
+
+    #竖框
+    for i in range(0, len(mDoorsList)):
+        if (mDataMode==1) : break
+        door = mDoorsList[i]
+        pvbox = GetVBoxParam(door.mVBoxParam['name'])
+        if pvbox:
+            Add2SlidingConfig('VBoxParam', pvbox)  #竖框参数
+        pcolorclass = GetSlidingColorClass(u'竖框', door.mVBoxColor)
+        Add2SlidingConfig('SlidingColorClass', pcolorclass)
+
+        if door.mVBoxParam['wjname'] != '':
+            pbomdetail = GetWjBomDetaildata(door.mVBoxParam['wjname'], skcolor1, skcolor2, skcolor3, skcolor4)
+            Add2SlidingConfig('SlidingWjBomDetail', pbomdetail)
+    # 上下横框
+    for i in range(0, len(mDoorsList)):
+        if (mDataMode == 1): break
+        door = mDoorsList[i]
+        pcolorclass = GetSlidingColorClass(u'上横框', mMyUpBoxColor)
+        Add2SlidingConfig('SlidingColorClass', pcolorclass)
+        pcolorclass = GetSlidingColorClass(u'下横框', mMyDownBoxColor)
+        Add2SlidingConfig('SlidingColorClass', pcolorclass)
+
+        #上横框五金
+        if door.mUDBoxParam['wjname1'] != '':
+            pbomdetail = GetWjBomDetaildata(door.mUDBoxParam['wjname1'], skcolor1, skcolor2, skcolor3, skcolor4)
+            Add2SlidingConfig('SlidingWjBomDetail', pbomdetail)
+        #下横框五金
+        if door.mUDBoxParam['wjname2'] != '':
+            pbomdetail = GetWjBomDetaildata(door.mUDBoxParam['wjname2'], skcolor1, skcolor2, skcolor3, skcolor4)
+            Add2SlidingConfig('SlidingWjBomDetail', pbomdetail)
+
+        for j in range(0, len(door.panellist)):
+            pnl = door.panellist[j]
+            pnltype = GetSlidingPanelType(mSlidingParam['name'], pnl.PanelType)
+
+    for i in range(0, len(mDoorsList)):
+        if (mDataMode == 1): break
+        door = mDoorsList[i]
+        for j in range(0, len(door.boxlist)):
+            rb = door.boxlist[j]
+            if rb.h0 <= 0 : continue
+            phbox = GetSlidingHBoxParam(rb.boxtype)
+            Add2SlidingConfig('HBoxParam', phbox)
+
+            pcolorclass = GetSlidingColorClass(u'中横框', rb.color)
+            Add2SlidingConfig('SlidingColorClass', pcolorclass)
+
+            if phbox['wjname'] != '':
+                pbomdetail = GetWjBomDetaildata(phbox['wjname'], skcolor1, skcolor2, skcolor3, skcolor4)
+                Add2SlidingConfig('SlidingWjBomDetail', pbomdetail)
+
+    for i in range(0, len(mDoorsList)):
+        if (mDataMode == 1): break
+        door = mDoorsList[i]
+        for j in range(len(door.panellist)):
+            pnl = door.panellist[j]
+
+            if (pnl.extradata!='' and len(pnl.extradata) > 5): #有竖格门芯再此 从门板中ExtraData字段提取竖格门芯
+                Sfg_Param = {}
+                sfgFK = Sfg_Param
+
+                sJson = pnl.extradata
+                sJson = sJson.replace('^', '"')
+
+                data = json.loads(sJson)
+                data['L'] = pnl.w1
+                data['H'] = pnl.h1
+
+                if 'direc' not in data: data['direc'] = 0
+                if (data['nType'] == 2):
+
+                    if 'direc' in data and data['direc'] == 1:
+
+                        xml = Sliding['SfgParam']['HTxml']
+                        cfgobj = copy.deepcopy(HCfgobj2)
+                        config['tmconfig']['SfgParam']['HTxml'] = xml
+                        config['tmconfig']['Hfg2'] = HCfgobj2
+                    else:
+
+                        xml = Sliding['SfgParam']['Txml']
+                        cfgobj = copy.deepcopy(Cfgobj2)
+                        config['tmconfig']['SfgParam']['Txml'] = xml
+                        config['tmconfig']['Sfg2'] = Cfgobj2
+
+                if (data['nType'] == 3):
+                    if 'direc' in data and data['direc'] == 1:
+
+                        xml = Sliding['SfgParam']['HSxml']
+
+                        cfgobj = copy.deepcopy(HCfgobj3)
+                        config['tmconfig']['SfgParam']['HSxml'] = xml
+                        config['tmconfig']['Hfg3'] = HCfgobj3
+                    else:
+                        xml = Sliding['SfgParam']['Sxml']
+                        cfgobj = copy.deepcopy(HCfgobj2)
+                        config['tmconfig']['SfgParam']['Sxml'] = xml
+                        config['tmconfig']['Sfg3'] = Cfgobj3
+                if (data['nType'] == 4):
+                    if 'direc' in data and data['direc'] == 1:
+
+                        xml = Sliding['SfgParam']['HFxml']
+                        cfgobj = copy.deepcopy(HCfgobj4)
+                        config['tmconfig']['SfgParam']['HFxml'] = xml
+                        config['tmconfig']['Hfg4'] = HCfgobj4
+                    else:
+                        xml = Sliding['SfgParam']['Fxml']
+                        cfgobj = copy.deepcopy(Cfgobj4)
+                        config['tmconfig']['SfgParam']['Fxml'] = xml
+                        config['tmconfig']['Sfg4'] = Cfgobj4
+                config['tmconfig']['HSHBoxParam'] = [],  # 22.横中横 HSHBoxParam
+                config['tmconfig']['SHBoxParam'] = [],  # 23.竖中横 SHBoxParam
+
+            pnltype = GetSlidingPanelType(mSlidingParam['name'], pnl.PanelType)
+
+            if (pnltype ):
+                Add2SlidingConfig('PanelType', pnltype)
+
+                pnlbomdetail = GetPanelBomdata(pnltype['slaVe'],pnl.PanelType, pnl.color, pnl.color2,door.mVBoxColor, pnl.w1, pnl.h1)
+
+                Add2SlidingConfig('PanelBomDetail', pnlbomdetail) #门板附加物料
+
+            pssexp = GetSlidingSSExp(pnl.PanelType)
+            Add2SlidingConfig('SSExp', pssexp)
+
+            pcolorclass = GetSlidingColorClass(u'门板', pnl.PanelType, pnl.color)
+            if pcolorclass: Add2SlidingConfig('SlidingColorClass', pcolorclass)
+            #添加门板的关联五金
+            if (pnltype) and (pnltype['wjname'] !=''):
+                pbomdetail = GetWjBomDetaildata(pnltype['wjname'], skcolor1, skcolor2, skcolor3, skcolor4)
+                Add2SlidingConfig('SlidingWjBomDetail', pbomdetail)
+
+def LoadXML2Bom(xmlfile, RootPath):
+    global mDoorsList, config, Sliding, mWJBomDetailList, mAccessoryList, mDoorPanelBomDetailList,\
+        mSlidingWjBomDetailList, Cfgobj2, Cfgobj3, Cfgobj4, HCfgobj2, HCfgobj3, HCfgobj4, SHBoxParam, \
+        HSHBoxParam, cfglist
+
+
+    def EnumChild(root,pl=0,ph=0):
+        string = root.getAttribute(u'类别')
+        if (string == u'趟门,趟门') or (string == u'掩门,掩门'):
+            for k in range(0, root.childNodes.length):  #
+                node = root.childNodes[k]
+                if node.nodeType != 1: continue
+                if node.nodeName == u'模板':
+                    cnode = getfirstchild(node)
+                    childxml = ''
+                    if cnode:
+                        childxml = cnode.toxml('utf8')
+                        #_logging.debug(childxml)
+
+                    if (childxml!='') and (string == u'趟门,趟门'):
+                        gettmconfig(childxml, int(pl),int(ph), mDoorsList)
+
+                    if (childxml!='') and (string == u'掩门,掩门'):
+                        getymconfig(childxml, int(pl),int(ph), mDoorsList)
+
+        for i in range(0, root.childNodes.length):
+            node = root.childNodes[i]
+            if node.nodeType != 1 : continue
+            if node.nodeName == u'我的模块':
+                if node.childNodes.length > 0:
+                    for j in range(node.childNodes.length-1,-1,-1):  #
+                        cnode = node.childNodes[j]
+                        if cnode.nodeType != 1: continue
+                        string = cnode.getAttribute(u'显示方式')
+                        if (string == u'3'):
+                            node.childNodes.remove(cnode)
+                            continue
+                        if cnode.childNodes.length > 0:
+                            ccnode = getfirstchild(cnode)
+                            l = cnode.getAttribute('宽')
+                            if l == '': l ='0'
+                            h = cnode.getAttribute('高')
+                            if h == '': h = '0'
+                            EnumChild(ccnode,l, h)    #ccnode 产品节点
+
+    mDoorsList = []
+    config = {
+        'ymconfig': {
+            'mExpList': [],
+            'mTypeList': [],
+            'mParamList': [],
+            'mHandleList': [],
+            'mHingeList': [],
+            'mDoorHBoxParamList': [],
+            'mDoorPanelTypeList': [],
+            'mAccessoryList': [],
+            'mColorClassList': [],
+            'mColorClass2List': [],
+            'mShutterExpList': [],
+            'mWJBomList': [],
+            'mWJBomDetailList': [],
+            'mDoorPanelBomDetailList': [],
+            'mDoorXMLList': []
+        },
+        'tmconfig': {
+            'SlidingExp': [],  # 1.单门数量类型
+            'SlidingType': [],  # 2.门类型
+            'SlidingParam': [],  # 3.边框类型
+            'UDBoxParam': [],  # 4.上下横框类型
+            'TrackParam': [],  # 5.趟门上下轨参数
+            'HBoxParam': [],  # 6.趟门中横框
+            'VBoxParam': [],  # 7.竖框参数
+            'SlidingColor': [],  # 8.颜色分类2
+            'PanelType': [],  # 9.门板类型
+            'SlidingAccessory': [],  # 10.五金配件
+            'SlidingColorClass': [],  # 11.颜色分类
+            'SSExp': [],  # 12.百叶板计算公式
+            'SlidingWjBomDetail': [],  # 13.五金配件分类数据
+            'PanelBomDetail': [],  # 14.门板附加物料
+            'Cfglist': [],  # 15.门转换表
+            'Hfg2': [],  # 16.趟门2横分格
+            'Hfg3': [],  # 17.趟门3横分格
+            'Hfg4': [],  # 18.趟门4横分格
+            'Sfg2': [],  # 19.趟门2竖分格
+            'Sfg3': [],  # 20.趟门3竖分格
+            'Sfg4': [],  # 21.趟门4竖分格
+            'HSHBoxParam': [],  # 22.横中横 HSHBoxParam
+            'SHBoxParam': [],  # 23.竖中横 SHBoxParam
+            'SfgParam': {},  # 24 xml
+        },
+        'gtconfig':{
+            'qdsoft_id':'data',
+            'UrlIp':'http://129.204.134.85:8002/Qdbom'
+        }
+    }
+    Sliding = {
+        'SfgParam': {
+            'HTxml': '<产品 名称="横2格门" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="$门芯1宽度" 深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="$门芯1宽度-$竖中横进槽" Y="0" Z="0" 宽="L" 深="$竖中横厚度" 高="$竖中横宽度" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/><板件 名称="门芯2" X="$门芯1宽度+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" Z="0" 宽="L-$门芯1宽度-$竖中横宽度+2*$竖中横进槽" 深="$门芯2厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/></我的模块><我的规格><规格 名称="竖2格门" 宽="800" 深="20" 高="1000"/></我的规格></产品>',
+            'Txml': '<产品 名称="竖2格门" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="$门芯1宽度" 深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="$门芯1宽度-$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横宽度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/><板件 名称="门芯2" X="$门芯1宽度+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" Z="0" 宽="L-$门芯1宽度-$竖中横宽度+2*$竖中横进槽" 深="$门芯2厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/></我的模块><我的规格><规格 名称="竖2格门" 宽="800" 深="20" 高="1000"/></我的规格></产品>',
+            'Sxml': '<产品 名称="竖3格门_两边均分" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" 深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2-$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/><板件 名称="门芯2" X="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" Z="0" 宽="$门芯2宽度" 深="$门芯2厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/><板件 名称="竖中横2" X="L-(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2-$竖中横宽度+$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="4"/><板件 名称="门芯3" X="L-(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" Y="$门芯3前偏移" Z="0" 宽="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" 深="$门芯3厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="5"/></我的模块><我的规格><规格 名称="竖3格门" 宽="800" 深="20" 高="1000"/></我的规格></产品>',
+            'Fxml': '<产品 名称="竖4格门_改123" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="$门芯1宽度" 深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="$门芯1宽度-$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="4" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/><板件 名称="门芯2" X="$门芯1宽度+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" Z="0" 宽="$门芯2宽度" 深="$门芯2厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/><板件 名称="竖中横2" X="$门芯1宽度+$门芯2宽度+$竖中横宽度-3*$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="4" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="4"/><板件 名称="门芯3" X="$门芯1宽度+$门芯2宽度+2*$竖中横宽度-4*$竖中横进槽" Y="$门芯3前偏移" Z="0" 宽="$门芯3宽度" 深="$门芯3厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="5"/><板件 名称="竖中横3" X="$门芯1宽度+$门芯2宽度+$门芯3宽度+2*$竖中横宽度-5*$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="4" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="6"/><板件 名称="门芯4" X="L-(L-$门芯1宽度-$门芯2宽度-$门芯3宽度-3*$竖中横宽度+6*$竖中横进槽)" Y="$门芯4前偏移" Z="0" 宽="L-$门芯1宽度-$门芯2宽度-$门芯3宽度-3*$竖中横宽度+6*$竖中横进槽" 深="$门芯4厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="7"/></我的模块><我的规格><规格 名称="竖3格门" 宽="900" 深="20" 高="1000"/></我的规格></产品>',
+            'HSxml': '<产品 名称="横3格门_两边均分" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" 深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2-$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/><板件 名称="门芯2" X="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" Z="0" 宽="$门芯2宽度" 深="$门芯2厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/><板件 名称="竖中横2" X="L-(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2-$竖中横宽度+$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="4"/><板件 名称="门芯3" X="L-(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" Y="$门芯3前偏移" Z="0" 宽="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" 深="$门芯3厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="5"/></我的模块><我的规格><规格 名称="竖3格门" 宽="800" 深="20" 高="1000"/></我的规格></产品>',
+            'HFxml': '<产品 名称="横4格门_改123" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="$门芯1宽度" 深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="$门芯1宽度-$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/><板件 名称="门芯2" X="$门芯1宽度+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" Z="0" 宽="$门芯2宽度" 深="$门芯2厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/><板件 名称="竖中横2" X="$门芯1宽度+$门芯2宽度+$竖中横宽度-3*$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="4"/><板件 名称="门芯3" X="$门芯1宽度+$门芯2宽度+2*$竖中横宽度-4*$竖中横进槽" Y="$门芯3前偏移" Z="0" 宽="$门芯3宽度" 深="$门芯3厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="5"/><板件 名称="竖中横3" X="$门芯1宽度+$门芯2宽度+$门芯3宽度+2*$竖中横宽度-5*$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="6"/><板件 名称="门芯4" X="L-(L-$门芯1宽度-$门芯2宽度-$门芯3宽度-3*$竖中横宽度+6*$竖中横进槽)" Y="$门芯4前偏移" Z="0" 宽="L-$门芯1宽度-$门芯2宽度-$门芯3宽度-3*$竖中横宽度+6*$竖中横进槽" 深="$门芯4厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="7"/></我的模块><我的规格><规格 名称="竖3格门" 宽="900" 深="20" 高="1000"/></我的规格></产品>'},
+    }
+    mWJBomDetailList, mAccessoryList, mDoorPanelBomDetailList = DoorInitData(RootPath)
+    mSlidingWjBomDetailList, Cfgobj2, Cfgobj3, Cfgobj4, HCfgobj2, HCfgobj3, HCfgobj4, SHBoxParam, HSHBoxParam, cfglist = SlidingInitData(RootPath)
+    DOMTree = minidom.parse(xmlfile)
+    root = DOMTree.getElementsByTagName(u'产品')[0]
+    node = getfirstchild(root)
+    EnumChild(node)
+    config['tmconfig']['Cfglist'] = cfglist
+    return config
+
+if __name__ == '__main__':
+    print '999999999'
+    Sliding = {
+        'Sfg_Param': {'HTxml': u'<产品 名称="横2格门" 类别="" 摆放方式="整块;左右延伸:-1;'
+                               u'前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;'
+                               u'" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" '
+                               u'ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表>'
+                               u'</变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" '
+                               u'Z="0" 宽="$门芯1宽度" 深="$门芯1厚度" 高="H" 类别="" '
+                               u'基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" '
+                               u'HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" '
+                               u'OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="$门芯1宽度-$竖中横进槽" '
+                               u'Y="0" Z="0" 宽="L" 深="$竖中横厚度" 高="$竖中横宽度" 类别="" '
+                               u'基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" '
+                               u'Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/>'
+                               u'<板件 名称="门芯2" X="$门芯1宽度+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" '
+                               u'Z="0" 宽="L-$门芯1宽度-$竖中横宽度+2*$竖中横进槽" 深="$门芯2厚度" 高="H" '
+                               u'类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" '
+                               u'Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/></我的模块>'
+                               u'<我的规格><规格 名称="竖2格门" 宽="800" 深="20" 高="1000"/></我的规格></产品>',
+                      'Txml': u'<产品 名称="竖2格门" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;'
+                              u'上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" '
+                              u'颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" '
+                              u'LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块>'
+                              u'<板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="$门芯1宽度" '
+                              u'深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" '
+                              u'MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" '
+                              u'OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="$门芯1宽度-$竖中横进槽" Y="0" Z="0" '
+                              u'宽="$竖中横宽度" 深="$竖中横宽度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" '
+                              u'MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" '
+                              u'guid="2"/><板件 名称="门芯2" X="$门芯1宽度+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" '
+                              u'Z="0" 宽="L-$门芯1宽度-$竖中横宽度+2*$竖中横进槽" 深="$门芯2厚度" 高="H" 类别="" '
+                              u'基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" '
+                              u'ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/></我的模块><我的规格><规格 '
+                              u'名称="竖2格门" 宽="800" 深="20" 高="1000"/></我的规格></产品>',
+                      'Sxml': u'<产品 名称="竖3格门_两边均分" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" 深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2-$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/><板件 名称="门芯2" X="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" Z="0" 宽="$门芯2宽度" 深="$门芯2厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/><板件 名称="竖中横2" X="L-(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2-$竖中横宽度+$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="4"/><板件 名称="门芯3" X="L-(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" Y="$门芯3前偏移" Z="0" 宽="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" 深="$门芯3厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="5"/></我的模块><我的规格><规格 名称="竖3格门" 宽="800" 深="20" 高="1000"/></我的规格></产品>',
+                      'Fxml': u'<产品 名称="竖4格门_改123" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="$门芯1宽度" 深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="$门芯1宽度-$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="4" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/><板件 名称="门芯2" X="$门芯1宽度+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" Z="0" 宽="$门芯2宽度" 深="$门芯2厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/><板件 名称="竖中横2" X="$门芯1宽度+$门芯2宽度+$竖中横宽度-3*$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="4" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="4"/><板件 名称="门芯3" X="$门芯1宽度+$门芯2宽度+2*$竖中横宽度-4*$竖中横进槽" Y="$门芯3前偏移" Z="0" 宽="$门芯3宽度" 深="$门芯3厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="5"/><板件 名称="竖中横3" X="$门芯1宽度+$门芯2宽度+$门芯3宽度+2*$竖中横宽度-5*$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="4" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="6"/><板件 名称="门芯4" X="L-(L-$门芯1宽度-$门芯2宽度-$门芯3宽度-3*$竖中横宽度+6*$竖中横进槽)" Y="$门芯4前偏移" Z="0" 宽="L-$门芯1宽度-$门芯2宽度-$门芯3宽度-3*$竖中横宽度+6*$竖中横进槽" 深="$门芯4厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="7"/></我的模块><我的规格><规格 名称="竖3格门" 宽="900" 深="20" 高="1000"/></我的规格></产品>',
+                      'HSxml': u'<产品 名称="横3格门_两边均分" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" 深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2-$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/><板件 名称="门芯2" X="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" Z="0" 宽="$门芯2宽度" 深="$门芯2厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/><板件 名称="竖中横2" X="L-(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2-$竖中横宽度+$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="4"/><板件 名称="门芯3" X="L-(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" Y="$门芯3前偏移" Z="0" 宽="(L-$门芯2宽度-2*$竖中横宽度+4*$竖中横进槽)/2" 深="$门芯3厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="1" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="5"/></我的模块><我的规格><规格 名称="竖3格门" 宽="800" 深="20" 高="1000"/></我的规格></产品>',
+                      'HFxml': u'<产品 名称="横4格门_改123" 类别="" 摆放方式="整块;左右延伸:-1;前后延伸:-1;上下延伸:-1;尺寸限制:1,1220,1,1220,1,2430;" 装饰类别="趟门" 材料="" 颜色="" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" LgwjFlag="0"><摆放规则列表/><变量列表></变量列表><我的模块><板件 名称="门芯1" X="0" Y="$门芯1前偏移" Z="0" 宽="$门芯1宽度" 深="$门芯1厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="1"/><板件 名称="竖中横1" X="$门芯1宽度-$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="2"/><板件 名称="门芯2" X="$门芯1宽度+$竖中横宽度-2*$竖中横进槽" Y="$门芯2前偏移" Z="0" 宽="$门芯2宽度" 深="$门芯2厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="3"/><板件 名称="竖中横2" X="$门芯1宽度+$门芯2宽度+$竖中横宽度-3*$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="4"/><板件 名称="门芯3" X="$门芯1宽度+$门芯2宽度+2*$竖中横宽度-4*$竖中横进槽" Y="$门芯3前偏移" Z="0" 宽="$门芯3宽度" 深="$门芯3厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="5"/><板件 名称="竖中横3" X="$门芯1宽度+$门芯2宽度+$门芯3宽度+2*$竖中横宽度-5*$竖中横进槽" Y="0" Z="0" 宽="$竖中横宽度" 深="$竖中横厚度" 高="H" 类别="" 基础图形="BG_竖中横" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="6"/><板件 名称="门芯4" X="L-(L-$门芯1宽度-$门芯2宽度-$门芯3宽度-3*$竖中横宽度+6*$竖中横进槽)" Y="$门芯4前偏移" Z="0" 宽="L-$门芯1宽度-$门芯2宽度-$门芯3宽度-3*$竖中横宽度+6*$竖中横进槽" 深="$门芯4厚度" 高="H" 类别="" 基础图形="BG::RECT" 装饰类别="趟门" MATID="" DI="3" HoleFlag="0" Flag32="0" ErrorFlag="0" ActFlag="0" OZ="" 图形参数="" guid="7"/></我的模块><我的规格><规格 名称="竖3格门" 宽="900" 深="20" 高="1000"/></我的规格></产品>'
+                      },
+    }
+    config = {
+                'ymconfig':{
+                    'mExPList':[],
+                    'mTypeList':[],
+                    'mParamList':[],
+                    'mHandleList':[],
+                    'mHingeList':[],
+                    'mDoorHBoxParamList':[],
+                    'mDoorPanelTypeList':[],
+                    'mAccessoryList':[],
+                    'mColorClassList':[],
+                    'mColorClass2List':[],
+                    'mShutterExpList':[],
+                    'mWJBomList':[],
+                    'mWJBomDetailList':[],
+                    'mDoorPanelBomDetailList':[],
+                    'mDoorXMLList':[]
+                            },
+                'tmconfig':{
+                    'SlidingExp':[],  #1.单门数量类型
+                    'SlidingType':[], #2.门类型
+                    'SlidingParam':[], #3.边框类型
+                    'UDBoxParam':[],#  4.上下横框类型
+                    'TrackParam':[],    #5.趟门上下轨参数
+                    'HBoxParam':[],    #6.趟门中横框
+                    'VBoxParam':[],    #7.竖框参数
+                    'SlidingColor':[],    #8.颜色分类2
+                    'PanelType':[],    #9.门板类型
+                    'SlidingAccessory':[],    #10.五金配件
+                    'SlidingColorClass':[],    #11.颜色分类
+                    'SSExp':[],    #12.百叶板计算公式
+                    'SlidingWjBomDetail':[],    #13.五金配件分类数据
+                    'PanelBomDetail':[],    #14.门板附加物料
+                    'Cfglist':[],    #15.门转换表
+                    'Hfg2':[],    #16.趟门2横分格
+                    'Hfg3':[],    #17.趟门3横分格
+                    'Hfg4': [],  # 18.趟门4横分格
+                    'Sfg2': [],  # 19.趟门2竖分格
+                    'Sfg3': [],  # 20.趟门3竖分格
+                    'Sfg4': [],  # 21.趟门4竖分格
+                    'HSHBoxParam': [],  # 22.横中横 HSHBoxParam
+                    'SHBoxParam': [],  # 23.竖中横 SHBoxParam
+                    'SfgParam':{},    #24 xml
+                },
+              }
+    mDoorsList = []
+    mGridItem = 0 #均分
+    base_dir = os.path.abspath(os.path.join(os.getcwd(),'..'))
+    print '2=',base_dir
+    mWJBomDetailList, mAccessoryList, mDoorPanelBomDetailList = InitData()
+    mSlidingWjBomDetailList, Cfgobj2, Cfgobj3, Cfgobj4, HCfgobj2, HCfgobj3, HCfgobj4, SHBoxParam, HSHBoxParam = SlidingInitData()
+    path = 'D:\\HGSoftware\\009_华广定制一体化设计软件_在线版本\Python\\xmls\\123\\A051255D8BBB3758EB19376711116483'
+    #path = 'extradata.xml'
+    LoadXML2Bom1(path)
+    # for pwjbomdetail in mWJBomDetailList:
+    #     Add2Config('mWJBomDetailList', pwjbomdetail)  # 五金配件分类数据.cfg
+    # for pa in mAccessoryList:
+    #     Add2Config('mAccessoryList', pa)  # 五金配件.cfg
+    # for ppbdetail in mDoorPanelBomDetailList:
+    #     Add2Config('mDoorPanelBomDetailList', ppbdetail)  # 门芯附加物料.cfg
+    for key, value in config['ymconfig'].iteritems():
+        _logging.debug(key + ',' +str(len(value)))
+    print json.dumps(config,encoding='utf8',ensure_ascii=False).encode('utf8')
